@@ -6,7 +6,7 @@
 ![Build Sysmon config with all modules](https://github.com/olafhartong/sysmon-modular/workflows/Build%20Sysmon%20config%20with%20all%20modules/badge.svg)
 [![Twitter](https://img.shields.io/twitter/follow/olafhartong.svg?style=social&label=Follow)](https://twitter.com/olafhartong)
 
-This is a Microsoft Sysinternals Sysmon configuration repository, set up modular for easier maintenance and generation of specific configs.
+This is a Microsoft Sysinternals Sysmon [download here](https://docs.microsoft.com/en-us/sysinternals/downloads/sysmon) configuration repository, set up modular for easier maintenance and generation of specific configs.
 
 The sysmonconfig.xml within the repo is automatically generated after a successful merge by the PowerShell script and a successful load by Sysmon in an Azure Pipeline run.
 
@@ -65,6 +65,53 @@ For example, you will need to exclude actions of your antivirus, which will othe
     $> cd sysmon modular
     $> . .\Merge-SysmonXml.ps1
     $> Merge-AllSysmonXml -Path ( Get-ChildItem '[0-9]*\*.xml') -AsString | Out-File sysmonconfig.xml
+
+### Generating custom configs
+
+Below functions with great thanks to mbmy
+
+**New Function:** 
+`Find-RulesInBasePath` - takes a base path (i.e. C:\folder\sysmon-modular\) and finds all candidate xml rule files based upon regex pattern
+
+Example:
+```PS C:\Users\sysmon\sysmon-modular> Find-RulesInBasePath -BasePath C:\users\sysmon\sysmon-modular\ -OutputRules | Out-File available_rules.txt```
+
+**Merge-AllSysmonXml New Parameters:**
+
+`-BasePath` - finds all candidate xml rule files from a provided path based upon regex pattern and merges them
+
+Example:
+```PS C:\Users\sysmon\sysmon-modular> Merge-AllSysmonXml -AsString -BasePath C:\Users\sysmon\sysmon-modular\```
+
+
+`-ExcludeList` - Combined with -BasePath, takes a list of rules and excludes them from found rules prior to merge
+
+Example:
+```PS C:\Users\sysmon\sysmon-modular> Merge-AllSysmonXml -AsString -BasePath C:\Users\sysmon\sysmon-modular\ -ExcludeList C:\users\sysmon\sysmon-modular\exclude_rules.txt```
+
+
+`-IncludeList` - Combined with -BasePath, finds all available rules from base path but only merges those defined in a list
+
+Example:
+```PS C:\Users\sysmon\sysmon-modular> Merge-AllSysmonXml -AsString -BasePath C:\Users\sysmon\sysmon-modular\ -IncludeList C:\users\sysmon\sysmon-modular\include_rules.txt```
+
+
+Include/Exclude List Format Example:
+
+```1_process_creation\exclude_adobe_acrobat.xml
+3_network_connection_initiated\include_native_windows_tools.xml
+12_13_14_registry_event\exclude_internet_explorer_settings.xml
+12_13_14_registry_event\exclude_webroot.xml
+17_18_pipe_event\include_winreg.xml
+19_20_21_wmi_event\include_wmi_create.xml
+2_file_create_time\exclude_chrome.xml
+3_network_connection_initiated\include_native_windows_tools.xml
+3_network_connection_initiated\include_ports_proxies.xml
+8_create_remote_thread\include_general_commment.xml
+8_create_remote_thread\include_psinject.xml
+9_raw_access_read\include_general_commment.xml
+```
+
 
 ## Use
 
